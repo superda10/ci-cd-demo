@@ -42,14 +42,14 @@ jobs:
         steps:
             - name: stop old container
               run: |
-                 docker stop python-app || true
+                try { docker stop python-app } catch { }
             - name: start new container
               run: |
-                 docker run -d --name python-app -p 5001:5001 --restart unless-stopped ci-cd-demo:latest
+                docker run -d --name python-app -p 5001:5001 --restart unless-stopped ci-cd-demo:latest
             - name: check deployment
               run: |
-                sleep 10
+                Start-Sleep 10
                 curl -X GET http://localhost:5001/health || exit 1
                 echo "Deployment successful"
             - name: show running containers
-              run: docker ps | grep python-app
+              run: docker ps | Select-String python-app
