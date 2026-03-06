@@ -1,0 +1,56 @@
+name: CI/CD demo
+on:
+    push:
+        branches: [ main, dev]
+    pull_request:
+        branches: [ main, dev]
+jobs:
+    test:
+        name: Run Tests
+        runs-on: self-hosted
+    
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+            - name: Verify Python version
+              run: |
+                python3 --version
+                which python3
+            # - name: Install dependencies
+            #   run: |
+            #     source .venv/bin/activate
+            #     pip install -r requirements.txt
+            - name: Run tests
+              run: |
+                pytest test_app.py -v
+    build:
+        name: Build Docker Image
+        runs-on: self-hosted
+        needs: test
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+            
+            - name: Build Docker Image
+              run: docker build -t ci-cd-demo:latest .
+    deploy:
+        name: Deploy to localhost
+        runs-on: self-hosted
+        needs: build
+        if: github.ref == 'refs/heads/main'
+
+        steps:
+            - name: stop old container
+              run: |
+                 docker stop python-app || true
+            - name: start new container
+              run: |
+                 docker run -d --name python-app -p 5001:5001 --restart unless-stopped ci-cd-demo:latest
+            - name: check deployment
+              run: |
+                sleep 10
+                curl -X GET http://localhost:5001/health || exit 1
+                echo "Deployment successful"
+            - name: show running containers
+              run: docker ps | grep python-app
