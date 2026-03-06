@@ -43,6 +43,7 @@ jobs:
             - name: stop old container
               run: |
                 try { docker stop python-app } catch { }
+                try { docker rm python-app } catch { }
             - name: start new container
               run: |
                 docker run -d --name python-app -p 5001:5001 --restart unless-stopped ci-cd-demo:latest
