@@ -15,7 +15,7 @@ jobs:
             - name: Verify Python version
               run: |
                 python3 --version
-                which python3
+                Get-Command python3
             # - name: Install dependencies
             #   run: |
             #     source .venv/bin/activate
